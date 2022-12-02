@@ -1,29 +1,37 @@
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Scanner;
-import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
-public class Solution {
+public class Day1 {
 
-    public static int solve() throws FileNotFoundException {
-        Scanner scn = new Scanner(new File("src/data"));
-        scn.useDelimiter("\\r\\n");
-        ArrayList<Integer> list = new ArrayList<>();
+    public static int solvePart1() throws FileNotFoundException {
+        return getList().stream().max(Comparator.naturalOrder()).orElse(-1);
+    }
 
-        while (scn.hasNext()) {
-            int total = 0;
-            var s = scn.next();
-            while(!s.isBlank()) {
-                total += Integer.parseInt(s);
-                if (!scn.hasNext()) break;
-                s = scn.next();
-            }
-            list.add(total);
+    public static int solvePart2() throws FileNotFoundException {
+        return getList().stream().sorted(Comparator.reverseOrder()).limit(3).reduce(0, Integer::sum);
+    }
+
+    private static ArrayList<Integer> getList() {
+        var list = new ArrayList<Integer>();
+        try (Stream<String> stream = Files.lines(Paths.get("data/day1"))) {
+            var total = new AtomicInteger(0);
+            stream.forEach(d -> {
+                if (d.isBlank()) {
+                    list.add(total.get());
+                    total.set(0);
+                } else {
+                    total.getAndAdd(Integer.parseInt(d));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        scn.close();
-        return list.stream().max(Comparator.naturalOrder()).orElse(-1);
+        return list;
     }
 }
